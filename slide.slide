@@ -1,0 +1,142 @@
+チューニンガソンを戦う技術
+ITCFes 2014 Spring
+10 May 2014
+
+MURAOKA Yusuke
+@jbking
+yusuke@jbking.org
+
+* お前だれよ?
+
+.image images/author.jpg 180 270
+
+MURAOKA Yusuke
+@jbking
+フリーランサー
+Python, JavaScript
+PyCon参加芸人
+紅茶
+
+* 注意
+
+これから紹介する技術は用法用量を守って使いましょう
+
+* 超チューニング祭
+
+去る4/26-27 ニコニコ超会議3内の片隅でひっそりと開催された
+
+.link http://cyoppaya.kunikiya.jp/ 超チューニング祭(http://cyoppaya.kunikiya.jp/)
+
+mobile safariベースの計測ツールでスマートフォン用のニコニコ動画トップページをどれだけ速くできるか、あと見た目(超意訳)
+
+* 色々あって最速賞
+
+.image images/rewards.jpg 250 188
+
+.link http://qiita.com/jbking/items/d87961dc0a4e4b969f76 超チューニング祭で努力賞(最速賞)をとるためにやったこと(http://qiita.com/jbking/items/d87961dc0a4e4b969f76)
+
+最優秀賞のチームの5倍強の速さ
+
+* どんな工夫をしたか
+
+- API互換のある軽量ライブラリに置換
+- 表示に関係ないJavaScriptコードの除去
+- 非同期で取得しているコンテンツのインライン化
+- 肥大CommonCSSのシェイプアップ
+- 画像のインライン化
+- ApplicationCache
+
+* API互換のある軽量ライブラリに置換
+
+    <script src="http://cyouosoiserver.kunikiya.jp/js/jquery-1.9.1.min.js" type="text/javascript" charset="utf-8"></script>
+
+あきらかにおかしいドメイン
+jquery-1.9.1.min.js
+
+.link http://zeptojs.com/ Zepto.js(http://zeptojs.com/)
+
+* 表示に関係ないJavaScriptコードの除去
+
+Google Analytics
+使われていない関数が定義されているJSファイル
+
+* 非同期で取得しているコンテンツのインライン化
+
+.image images/ad_area.jpg
+
+実は広告
+広告サーバからJSONでデータをとってきてDOMを生成していた
+読み込みを遅延できるがチューニンガソンでは不利
+
+* 肥大CommonCSSのシェイプアップ
+
+common.css ...
+
+
+理想
+
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/toppage.css">
+
+現実
+
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/common.css">
+
+common.css #とは
+そもそもcommon.cssは太りやすい
+トップページに必要な記述も入ってしまっている
+過去のキャンペーンに使ったまま消されていないとか論外
+Use Chrome Developer Tools, Luke *DEMO*
+
+* 画像のインライン化
+
+<img src="...">に指定できるのはパスだけじゃない
+
+    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgA ...
+
+BASE64化された画像ファイル
+画像ファイル自体が小さくて回線が貧弱なときに有効
+今回はLTE網だったのでソケットを減らすのが有効だった
+
+* ApplicationCache
+
+.link http://www.html5rocks.com/ja/tutorials/appcache/beginner/ アプリケーションキャッシュ初心者ガイド(http://www.html5rocks.com/ja/tutorials/appcache/beginner/)
+ブラウザにファイルのキャッシュをさせる仕組み
+従来のキャッシュと違い更新していなかったらそもそもリクエストを飛ばさない
+If-Modified-SinceとかEtagより手前の仕組み
+マニフェストの内容の変更をフックとしてブラウザに変更を通知する
+
+
+manifest
+
+    CACHE MANIFEST
+    # コメント何でもいい
+    # ファイルの一覧に変更はないが、ブラウザに変更を通知したいときはここを変える
+    # v1
+    # キャッシュするファイルを並べる
+    /js/minified.js
+    /css/minified.css
+    img/thum/ad.jpg
+    # キャッシュ対象以外のファイルは都度リクエストを送る
+    NETWORK:
+    *
+
+* おまけ
+
+* チューニンガソンで勝つ技術
+
+レギュレーションの裏をかく
+
+- やってはいけないことは何か
+- ときには減点を受けいれて総じてメリットを求める
+- 審査領域以外でできることがないか
+
+審査員や運営をまきこむ
+
+- 質問の形式でレギュレーションを自分に有利に振り向ける
+- 雑談のなかで非公開情報をそれとなく
+
+*審査の妨害を禁止する条項は必ず入れましょう*
+あえてそれを黙っていて利用する...なんてことは
